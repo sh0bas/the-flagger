@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app import models  # Ensure models are registered
-from app.api.routes import auth, users, games
+from app.api.routes import auth, users, games, countries
 
 # Create FastAPI app
 app = FastAPI(
@@ -27,6 +27,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(users.router, prefix="/api/users", tags=["users"])
 app.include_router(games.router, prefix="/api/games", tags=["games"])
+app.include_router(countries.router, prefix="/api", tags=["countries"])
 
 
 @app.get("/")
