@@ -1,0 +1,1 @@
+"""Flagger backend application."""
