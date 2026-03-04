@@ -12,7 +12,9 @@ class CountryResponse(BaseModel):
     iso_code: str
     alt_names: list[str] = []
     is_independent: bool
-    
+    difficulty: str = "medium"
+    entity_type: str = "sovereign_state"
+
     class Config:
         from_attributes = True
 

@@ -62,6 +62,28 @@ class GameSessionResponse(BaseModel):
     avg_response_ms: int
     max_streak: int
     played_at: datetime
-    
+
     class Config:
         from_attributes = True
+
+
+class FlagQuizAnswer(BaseModel):
+    """Individual answer record for a client-side flag quiz."""
+    country_id: int
+    user_answer: str
+    correct: bool
+    response_ms: int
+
+
+class FlagQuizResult(BaseModel):
+    """Result payload from a completed client-side flag quiz session."""
+    game_mode: str = Field(..., pattern=r'^(practice|endless|gauntlet)$')
+    regions: list[str] = Field(default_factory=list)
+    entity_types: list[str] = Field(default_factory=list)
+    difficulties: list[str] = Field(default_factory=list)
+    score: int = Field(default=0, ge=0)
+    correct_count: int = Field(default=0, ge=0)
+    questions_count: int = Field(default=0, ge=0)
+    max_streak: int = Field(default=0, ge=0)
+    avg_response_ms: int = Field(default=0, ge=0)
+    answers: list[FlagQuizAnswer] = Field(default_factory=list)

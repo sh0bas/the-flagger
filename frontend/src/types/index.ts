@@ -1,4 +1,4 @@
-""" TypeScript type definitions."""
+/** TypeScript type definitions."""
 export interface User {
     id: string
     username: string
@@ -70,4 +70,69 @@ export interface LeaderboardEntry {
     avatar_url: string | null
     score: number
     games_played: number
+}
+
+// ── Flag Quiz types ──────────────────────────────────────────────────────────
+
+export type FlagQuizMode = 'practice' | 'endless' | 'gauntlet'
+export type Region = 'americas' | 'europe' | 'africa' | 'asia' | 'oceania'
+export type Difficulty = 'easy' | 'medium' | 'hard'
+export type EntityType = 'sovereign_state' | 'territory' | 'us_state'
+
+export interface FlagEntity {
+    id: number
+    name: string
+    capital: string
+    region: Region
+    flag_url: string
+    iso_code: string
+    alt_names: string[]
+    difficulty: Difficulty
+    entity_type: EntityType
+    is_independent: boolean
+}
+
+export interface QuizFilters {
+    regions: Region[]
+    difficulties: Difficulty[]
+    entityTypes: EntityType[]
+}
+
+export interface QuizConfig {
+    mode: FlagQuizMode
+    filters: QuizFilters
+    batchSize: number
+}
+
+export interface QuizAnswer {
+    entityId: number
+    entityName: string
+    userAnswer: string
+    correct: boolean
+    responseMs: number
+    flagUrl: string
+}
+
+export type QuizPhase = 'lobby' | 'playing' | 'feedback' | 'roundEnd' | 'summary'
+
+export interface QuizState {
+    phase: QuizPhase
+    config: QuizConfig
+    pool: FlagEntity[]
+    queue: FlagEntity[]
+    currentIndex: number
+    currentEntity: FlagEntity | null
+    lastAnswer: QuizAnswer | null
+    answers: QuizAnswer[]
+    streak: number
+    maxStreak: number
+    score: number
+    // Practice-specific
+    incorrectCarryForward: FlagEntity[]
+    currentRound: number
+    // Endless-specific
+    slidingHistory: number[]  // last 30 entity IDs
+    // Gauntlet-specific
+    failed: boolean
+    gauntletWon: boolean
 }

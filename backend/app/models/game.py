@@ -15,6 +15,9 @@ class GameModeEnum(str, enum.Enum):
     FLAG_TO_COUNTRY = "flag_to_country"
     COUNTRY_TO_CAPITAL = "country_to_capital"
     CAPITAL_TO_COUNTRY = "capital_to_country"
+    PRACTICE = "practice"
+    ENDLESS = "endless"
+    GAUNTLET = "gauntlet"
 
 
 class GameSession(Base):

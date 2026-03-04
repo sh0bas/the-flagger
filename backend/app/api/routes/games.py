@@ -1,4 +1,6 @@
 """Game routes with server-side validation."""
+import uuid
+from datetime import datetime
 from typing import Annotated, List
 from uuid import UUID
 
@@ -7,13 +9,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api import deps
 from app.core.database import get_db
+from app.models.game import GameSession, GameModeEnum
 from app.models.user import User
 from app.schemas.game import (
     GameCreate,
     GameSessionResponse,
     Question,
     AnswerSubmission,
-    AnswerResult
+    AnswerResult,
+    FlagQuizResult,
 )
 from app.services.game_service import GameService
 
@@ -98,6 +102,57 @@ async def get_game_result(
     - Maximum streak achieved
     """
     return await GameService.get_game_result(db, game_id, current_user.id)
+
+
+@router.post("/save-result", response_model=GameSessionResponse)
+async def save_flag_quiz_result(
+    result: FlagQuizResult,
+    current_user: Annotated[User, Depends(deps.get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    """
+    Save the result of a completed client-side flag quiz session.
+
+    Stores the session in game_sessions for history and leaderboard tracking.
+    """
+    session = GameSession(
+        id=uuid.uuid4(),
+        user_id=current_user.id,
+        game_mode=GameModeEnum(result.game_mode),
+        regions=result.regions,
+        country_ids=[a.country_id for a in result.answers],
+        score=result.score,
+        questions_count=result.questions_count,
+        correct_count=result.correct_count,
+        avg_response_ms=result.avg_response_ms,
+        max_streak=result.max_streak,
+        is_complete=True,
+        answers=[
+            {
+                "country_id": a.country_id,
+                "user_answer": a.user_answer,
+                "correct": a.correct,
+                "response_ms": a.response_ms,
+            }
+            for a in result.answers
+        ],
+        played_at=datetime.utcnow(),
+    )
+    db.add(session)
+    await db.commit()
+    await db.refresh(session)
+
+    return GameSessionResponse(
+        id=session.id,
+        game_mode=session.game_mode.value,
+        regions=session.regions,
+        score=session.score,
+        questions_count=session.questions_count,
+        correct_count=session.correct_count,
+        avg_response_ms=session.avg_response_ms,
+        max_streak=session.max_streak,
+        played_at=session.played_at,
+    )
 
 
 @router.get("/history", response_model=List[GameSessionResponse])
