@@ -20,16 +20,11 @@ import { useQuiz } from '../../contexts/QuizContext'
 import { saveResult, buildSavePayload } from '../../api/flagQuiz'
 import confetti from 'canvas-confetti'
 
-/** Extract ISO code from a flagcdn URL and return the Twemoji SVG URL. */
-function flagUrlToTwemoji(flagUrl: string): string {
-    const match = flagUrl.match(/\/([a-z]{2})\.png$/)
-    if (!match) return flagUrl
-    const iso = match[1].toUpperCase()
-    const codepoints = iso
-        .split('')
-        .map((c) => (0x1f1e6 + c.charCodeAt(0) - 65).toString(16))
-        .join('-')
-    return `https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/${codepoints}.svg`
+function entityFlagUrl(_flagUrl: string, iso: string): string {
+    if (iso.startsWith('US-')) {
+        return `https://flagcdn.com/w320/${iso.toLowerCase()}.png`
+    }
+    return `https://cdn.jsdelivr.net/npm/country-flag-icons@1.6.15/3x2/${iso.toUpperCase()}.svg`
 }
 
 export default function Summary() {
@@ -184,7 +179,7 @@ export default function Summary() {
                                 >
                                     <ListItemAvatar>
                                         <Avatar
-                                            src={flagUrlToTwemoji(a.flagUrl)}
+                                            src={entityFlagUrl(a.flagUrl, a.isoCode)}
                                             variant="rounded"
                                             sx={{ width: 48, height: 32, mr: 1, bgcolor: 'transparent' }}
                                         />

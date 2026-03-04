@@ -62,6 +62,9 @@ export function buildTheme(mode: PaletteMode) {
                 styleOverrides: {
                     body: {
                         transition: 'background-color 0.3s ease, color 0.3s ease',
+                        // Always reserve scrollbar width to prevent layout shift when
+                        // dropdown content makes the page taller than the viewport.
+                        overflowY: 'scroll',
                     },
                     '*::-webkit-scrollbar': { width: 8 },
                     '*::-webkit-scrollbar-track': { background: 'transparent' },

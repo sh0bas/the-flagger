@@ -31,14 +31,18 @@ const REGION_LABELS: Record<string, string> = {
     oceania: 'Oceania',
 }
 
-/** Convert a 2-letter ISO code to a Twemoji flag image URL. */
-function isoToTwemoji(iso: string): string {
-    const codepoints = iso
-        .toUpperCase()
-        .split('')
-        .map((c) => (0x1f1e6 + c.charCodeAt(0) - 65).toString(16))
-        .join('-')
-    return `https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/${codepoints}.svg`
+// For US states, the hint label uses entity_type instead of region
+const ENTITY_TYPE_LABELS: Record<string, string> = {
+    us_state: 'the United States',
+}
+
+/** Flag URL for an entity. */
+function entityFlagUrl(_flagUrl: string, iso: string): string {
+    // US states: flagcdn.com supports "us-xx" lowercase subdivision codes
+    if (iso.startsWith('US-')) {
+        return `https://flagcdn.com/w320/${iso.toLowerCase()}.png`
+    }
+    return `https://cdn.jsdelivr.net/npm/country-flag-icons@1.6.15/3x2/${iso.toUpperCase()}.svg`
 }
 
 export default function GameScreen() {
@@ -50,6 +54,14 @@ export default function GameScreen() {
     useEffect(() => {
         questionStartRef.current = Date.now()
     }, [currentEntity?.id])
+
+    // Preload the next flag in the queue so it's cached before the feedback overlay finishes
+    useEffect(() => {
+        const nextEntity = queue[currentIndex + 1]
+        if (!nextEntity) return
+        const img = new Image()
+        img.src = entityFlagUrl(nextEntity.flag_url, nextEntity.iso_code)
+    }, [currentIndex, queue])
 
     if (!currentEntity) return null
 
@@ -161,7 +173,7 @@ export default function GameScreen() {
             >
                 <Box
                     component="img"
-                    src={isoToTwemoji(currentEntity.iso_code)}
+                    src={entityFlagUrl(currentEntity.flag_url, currentEntity.iso_code)}
                     alt="Flag"
                     sx={{
                         width: '100%',
@@ -196,7 +208,7 @@ export default function GameScreen() {
                 >
                     <PlaceIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
                     <Typography variant="caption" color="text.secondary" fontWeight={500}>
-                        This country is in {REGION_LABELS[currentEntity.region] ?? currentEntity.region}
+                        {currentEntity.entity_type === 'us_state' ? 'This is a US state' : `This country is in ${REGION_LABELS[currentEntity.region] ?? currentEntity.region}`}
                     </Typography>
                 </Box>
             )}

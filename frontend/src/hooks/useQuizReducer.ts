@@ -153,6 +153,7 @@ function quizReducer(state: QuizState, action: QuizAction): QuizState {
                 correct,
                 responseMs,
                 flagUrl: entity.flag_url,
+                isoCode: entity.iso_code,
             }
 
             const newAnswers = [...state.answers, answer]

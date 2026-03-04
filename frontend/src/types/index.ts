@@ -111,6 +111,7 @@ export interface QuizAnswer {
     correct: boolean
     responseMs: number
     flagUrl: string
+    isoCode: string
 }
 
 export type QuizPhase = 'lobby' | 'playing' | 'feedback' | 'roundEnd' | 'summary'
