@@ -53,6 +53,17 @@ class TestNormalize:
     def test_case_and_whitespace(self):
         assert normalize_str("  UNITED STATES  ") == "united states"
 
+    def test_non_combining_non_ascii_chars_are_kept_not_dropped(self):
+        """A prior ascii-encode-ignore step silently deleted these entirely -
+        distinct answers containing them would all normalize to "" and
+        compare equal to each other, a false-positive match, not just a
+        false negative.
+        """
+        assert normalize_str("Großherzogtum Luxemburg") == "großherzogtum luxemburg"
+        assert normalize_str("Føroyar") == "føroyar"
+        assert normalize_str("Белоруссия") != ""
+        assert normalize_str("Белоруссия") != normalize_str("Казахстан")
+
     def test_empty(self):
         assert normalize_str("") == ""
 
