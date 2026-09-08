@@ -10,11 +10,11 @@ import {
     Fade,
 } from '@mui/material'
 import {
-    EmojiEvents as TrophyIcon,
     PlayArrow as PlayIcon,
     History as HistoryIcon,
 } from '@mui/icons-material'
 import { useAuth } from '../contexts/AuthContext'
+import { gradientButtonSx, gradientTextSx } from '../theme'
 
 interface ActionCard {
     icon: React.ReactNode
@@ -45,17 +45,6 @@ export default function Home() {
             gradientTo: 'rgba(139,92,246,0.12)',
         },
         {
-            icon: <TrophyIcon sx={{ fontSize: 36 }} />,
-            title: 'Leaderboard',
-            description: 'See how you rank against other players',
-            buttonLabel: 'View Rankings',
-            buttonVariant: 'outlined',
-            route: '/leaderboard',
-            iconColor: '#f59e0b',
-            gradientFrom: 'rgba(245,158,11,0.12)',
-            gradientTo: 'rgba(251,191,36,0.10)',
-        },
-        {
             icon: <HistoryIcon sx={{ fontSize: 36 }} />,
             title: 'Game History',
             description: 'Review your past games and scores',
@@ -71,7 +60,7 @@ export default function Home() {
     return (
         <Box
             sx={{
-                minHeight: 'calc(100vh - 64px)',
+                minHeight: { xs: 'calc(100vh - 56px)', sm: 'calc(100vh - 64px)' },
                 background: (theme) =>
                     theme.palette.mode === 'dark'
                         ? 'radial-gradient(ellipse at 50% -10%, rgba(99,102,241,0.18), transparent 60%)'
@@ -88,10 +77,7 @@ export default function Home() {
                                 component="h1"
                                 sx={{
                                     fontWeight: 800,
-                                    background: 'linear-gradient(135deg, #6366f1 0%, #ec4899 100%)',
-                                    WebkitBackgroundClip: 'text',
-                                    WebkitTextFillColor: 'transparent',
-                                    backgroundClip: 'text',
+                                    ...gradientTextSx,
                                     mb: 2,
                                 }}
                             >
@@ -102,7 +88,7 @@ export default function Home() {
                                 color="text.secondary"
                                 sx={{ fontWeight: 400, maxWidth: 480, mx: 'auto' }}
                             >
-                                Test your geography knowledge and climb the leaderboard
+                                Test your geography knowledge, one flag at a time
                             </Typography>
                         </Box>
 
@@ -111,12 +97,10 @@ export default function Home() {
                             {cards.map((card) => (
                                 <Grid item xs={12} md={4} key={card.title}>
                                     <Card
-                                        onClick={() => navigate(card.route)}
                                         sx={{
                                             height: '100%',
                                             display: 'flex',
                                             flexDirection: 'column',
-                                            cursor: 'pointer',
                                             '&:hover': {
                                                 transform: 'translateY(-6px)',
                                                 boxShadow: (theme) =>
@@ -153,17 +137,11 @@ export default function Home() {
                                             <Button
                                                 variant={card.buttonVariant}
                                                 size="large"
-                                                onClick={(e) => {
-                                                    e.stopPropagation()
-                                                    navigate(card.route)
-                                                }}
+                                                onClick={() => navigate(card.route)}
                                                 sx={
                                                     card.buttonVariant === 'contained'
                                                         ? {
-                                                              background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                                                              '&:hover': {
-                                                                  background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
-                                                              },
+                                                              ...gradientButtonSx,
                                                           }
                                                         : {}
                                                 }

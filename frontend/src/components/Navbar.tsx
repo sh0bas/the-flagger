@@ -15,6 +15,7 @@ import {
 import { AccountCircle, DarkMode, LightMode } from '@mui/icons-material'
 import { useAuth } from '../contexts/AuthContext'
 import { useThemeMode } from '../contexts/ThemeContext'
+import { gradientTextSx } from '../theme'
 
 export default function Navbar() {
     const navigate = useNavigate()
@@ -36,10 +37,6 @@ export default function Navbar() {
         navigate('/login')
     }
 
-    const handleProfile = () => {
-        handleMenuClose()
-        navigate('/profile')
-    }
 
     return (
         <AppBar position="sticky">
@@ -53,10 +50,7 @@ export default function Navbar() {
                         textDecoration: 'none',
                         fontWeight: 800,
                         fontSize: '1.35rem',
-                        background: 'linear-gradient(135deg, #6366f1, #ec4899)',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        backgroundClip: 'text',
+                        ...gradientTextSx,
                     }}
                 >
                     Flagger
@@ -64,7 +58,7 @@ export default function Navbar() {
 
                 {isAuthenticated ? (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        {(['Play', 'Leaderboard', 'History'] as const).map((label) => (
+                        {(['Play', 'History'] as const).map((label) => (
                             <Button
                                 key={label}
                                 color="inherit"
@@ -103,6 +97,8 @@ export default function Navbar() {
                         <IconButton
                             onClick={handleMenuOpen}
                             color="inherit"
+                            aria-label="Account menu"
+                            aria-haspopup="true"
                             sx={{ ml: 0.5 }}
                         >
                             {user?.avatar_url ? (
@@ -128,7 +124,6 @@ export default function Navbar() {
                                     {user?.display_name || user?.username}
                                 </Typography>
                             </MenuItem>
-                            <MenuItem onClick={handleProfile}>Profile</MenuItem>
                             <MenuItem onClick={handleLogout}>Logout</MenuItem>
                         </Menu>
                     </Box>

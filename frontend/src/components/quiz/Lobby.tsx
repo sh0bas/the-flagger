@@ -3,6 +3,7 @@ import {
     Box,
     Button,
     Card,
+    CardActionArea,
     CardContent,
     Chip,
     Divider,
@@ -20,6 +21,7 @@ import SchoolIcon from '@mui/icons-material/School'
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
 import { useQuiz } from '../../contexts/QuizContext'
 import type { FlagQuizMode, Region, Difficulty, EntityType } from '../../types'
+import { gradientButtonSx, gradientTextSx } from '../../theme'
 
 const REGIONS: { value: Region; label: string }[] = [
     { value: 'americas', label: 'Americas' },
@@ -121,10 +123,7 @@ export default function Lobby() {
                         variant="h3"
                         fontWeight={800}
                         sx={{
-                            background: 'linear-gradient(135deg, #6366f1, #ec4899)',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                            backgroundClip: 'text',
+                            ...gradientTextSx,
                         }}
                     >
                         Flag Quiz
@@ -143,15 +142,13 @@ export default function Lobby() {
                     <Typography variant="overline" color="text.secondary" letterSpacing={1.2}>
                         Game Mode
                     </Typography>
-                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2, mt: 1 }}>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: 2, mt: 1 }}>
                         {MODES.map((m) => {
                             const selected = mode === m.value
                             return (
                                 <Card
                                     key={m.value}
-                                    onClick={() => setMode(m.value)}
                                     sx={{
-                                        cursor: 'pointer',
                                         border: '2px solid',
                                         borderColor: selected ? m.color : 'divider',
                                         transition: 'all 0.2s ease',
@@ -169,6 +166,13 @@ export default function Lobby() {
                                         },
                                     }}
                                 >
+                                    {/* CardActionArea renders a real <button>: focus ring, Enter/Space,
+                                        and aria-pressed state — none of which a <Card onClick> has. */}
+                                    <CardActionArea
+                                        onClick={() => setMode(m.value)}
+                                        aria-pressed={selected}
+                                        sx={{ height: '100%' }}
+                                    >
                                     <CardContent sx={{ textAlign: 'center', p: 2.5, '&:last-child': { pb: 2.5 } }}>
                                         <Box
                                             sx={{
@@ -186,6 +190,7 @@ export default function Lobby() {
                                             {m.description}
                                         </Typography>
                                     </CardContent>
+                                    </CardActionArea>
                                 </Card>
                             )
                         })}
@@ -311,10 +316,7 @@ export default function Lobby() {
                         sx={{
                             ml: 'auto',
                             minWidth: 140,
-                            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                            '&:hover': {
-                                background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
-                            },
+                            ...gradientButtonSx,
                             '&.Mui-disabled': {
                                 background: (theme) =>
                                     theme.palette.mode === 'dark'

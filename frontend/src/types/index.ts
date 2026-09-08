@@ -1,4 +1,4 @@
-/** TypeScript type definitions."""
+/** TypeScript type definitions. */
 export interface User {
     id: string
     username: string
@@ -26,11 +26,6 @@ export interface TokenResponse {
     token_type: string
 }
 
-export interface GameMode {
-    mode: 'flag_to_country' | 'country_to_capital' | 'capital_to_country'
-    regions: string[]
-}
-
 export interface GameSession {
     id: string
     game_mode: string
@@ -42,37 +37,6 @@ export interface GameSession {
     max_streak: number
     played_at: string
 }
-
-export interface Question {
-    question_type: string
-    prompt: string
-    flag_url?: string
-    answer: string
-}
-
-export interface AnswerSubmission {
-    answer: string
-    response_time_ms: number
-}
-
-export interface AnswerResult {
-    correct: boolean
-    points_earned: number
-    streak: number
-    correct_answer: string
-}
-
-export interface LeaderboardEntry {
-    rank: number
-    user_id: string
-    username: string
-    display_name: string | null
-    avatar_url: string | null
-    score: number
-    games_played: number
-}
-
-// ── Flag Quiz types ──────────────────────────────────────────────────────────
 
 export type FlagQuizMode = 'practice' | 'endless' | 'gauntlet'
 export type Region = 'americas' | 'europe' | 'africa' | 'asia' | 'oceania'
@@ -114,7 +78,7 @@ export interface QuizAnswer {
     isoCode: string
 }
 
-export type QuizPhase = 'lobby' | 'playing' | 'feedback' | 'roundEnd' | 'summary'
+export type QuizPhase = 'lobby' | 'playing' | 'feedback' | 'summary'
 
 export interface QuizState {
     phase: QuizPhase
@@ -131,8 +95,6 @@ export interface QuizState {
     // Practice-specific
     incorrectCarryForward: FlagEntity[]
     currentRound: number
-    // Endless-specific
-    slidingHistory: number[]  // last 30 entity IDs
     // Gauntlet-specific
     failed: boolean
     gauntletWon: boolean

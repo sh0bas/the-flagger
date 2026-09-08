@@ -9,7 +9,9 @@ import {
     Alert,
     Paper,
 } from '@mui/material'
+import { errorMessage } from '../api/client'
 import { useAuth } from '../contexts/AuthContext'
+import { gradientButtonSx, gradientTextSx } from '../theme'
 
 export default function Register() {
     const navigate = useNavigate()
@@ -46,9 +48,8 @@ export default function Register() {
                 display_name: displayName || undefined,
             })
             navigate('/')
-        } catch (err: any) {
-            const errorMessage = err.response?.data?.detail || 'Registration failed. Please try again.'
-            setError(errorMessage)
+        } catch (err) {
+            setError(errorMessage(err, 'Registration failed. Please try again.'))
         } finally {
             setLoading(false)
         }
@@ -85,17 +86,14 @@ export default function Register() {
                         component="h1"
                         sx={{
                             fontWeight: 800,
-                            background: 'linear-gradient(135deg, #6366f1, #ec4899)',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                            backgroundClip: 'text',
+                            ...gradientTextSx,
                             mb: 1,
                         }}
                     >
                         Join Flagger
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                        Create an account to start playing and compete on the leaderboard
+                        Create an account to start playing and track your progress
                     </Typography>
                 </Box>
 
@@ -134,7 +132,7 @@ export default function Register() {
                         value={displayName}
                         onChange={(e) => setDisplayName(e.target.value)}
                         disabled={loading}
-                        helperText="How you'll appear on the leaderboard"
+                        helperText="How you'll appear in the app"
                     />
                     <TextField
                         label="Password"
@@ -167,10 +165,7 @@ export default function Register() {
                             mt: 3,
                             mb: 2,
                             py: 1.5,
-                            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                            '&:hover': {
-                                background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
-                            },
+                            ...gradientButtonSx,
                             '&.Mui-disabled': {
                                 background: (theme) =>
                                     theme.palette.mode === 'dark'
