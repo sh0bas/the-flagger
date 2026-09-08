@@ -35,12 +35,24 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    # Rows using the newer modes cannot be represented by the old type; drop them
-    # rather than fail the migration halfway through.
-    op.execute(
-        "DELETE FROM game_sessions WHERE game_mode NOT IN "
-        "('flag_to_country', 'country_to_capital', 'capital_to_country')"
-    )
+    # Rows using practice/endless/gauntlet can't be represented by the old
+    # enum. Refuse rather than silently deleting real game history — by the
+    # time this migration has been live for any length of time, that's every
+    # row, since nothing writes the old values anymore.
+    conn = op.get_bind()
+    incompatible = conn.execute(
+        sa.text(
+            "SELECT count(*) FROM game_sessions WHERE game_mode NOT IN "
+            "('flag_to_country', 'country_to_capital', 'capital_to_country')"
+        )
+    ).scalar()
+    if incompatible:
+        raise RuntimeError(
+            f"Refusing to downgrade: {incompatible} game_sessions row(s) use a "
+            "game_mode value ('practice'/'endless'/'gauntlet') the old "
+            "gamemodeenum can't represent. Back up and manually clear or "
+            "migrate these rows first if you really want to downgrade."
+        )
     op.execute(
         "CREATE TYPE gamemodeenum AS ENUM "
         "('flag_to_country', 'country_to_capital', 'capital_to_country')"
