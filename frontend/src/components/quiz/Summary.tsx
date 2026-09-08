@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
     Box,
     Button,
@@ -19,13 +19,7 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
 import { useQuiz } from '../../contexts/QuizContext'
 import { saveResult, buildSavePayload } from '../../api/flagQuiz'
 import confetti from 'canvas-confetti'
-
-function entityFlagUrl(_flagUrl: string, iso: string): string {
-    if (iso.startsWith('US-')) {
-        return `https://flagcdn.com/w320/${iso.toLowerCase()}.png`
-    }
-    return `https://cdn.jsdelivr.net/npm/country-flag-icons@1.6.15/3x2/${iso.toUpperCase()}.svg`
-}
+import { gradientButtonSx, gradientTextSx } from '../../theme'
 
 export default function Summary() {
     const { state, dispatch } = useQuiz()
@@ -42,12 +36,26 @@ export default function Summary() {
         }
     }, [gauntletWon])
 
+    // Score shown is the server's once the save lands. The client's running
+    // total is a display-only mirror, so this is also the drift detector.
+    const [savedScore, setSavedScore] = useState<number | null>(null)
+    const [saveFailed, setSaveFailed] = useState(false)
+    const [saving, setSaving] = useState(false)
+
+    const save = useCallback(() => {
+        setSaving(true)
+        setSaveFailed(false)
+        saveResult(buildSavePayload(answers, config))
+            .then((game) => setSavedScore(game.score))
+            .catch(() => setSaveFailed(true))
+            .finally(() => setSaving(false))
+    }, [answers, config])
+
     useEffect(() => {
         if (savedRef.current) return
         savedRef.current = true
-        const payload = buildSavePayload(answers, config, score, maxStreak)
-        saveResult(payload).catch(() => {})
-    }, []) // eslint-disable-line react-hooks/exhaustive-deps
+        save()
+    }, [save])
 
     const modeLabel =
         config.mode === 'practice'
@@ -78,6 +86,19 @@ export default function Summary() {
                         <strong>Run failed.</strong> Better luck next time!
                     </Alert>
                 )}
+                {saveFailed && (
+                    <Alert
+                        severity="warning"
+                        sx={{ width: '100%', maxWidth: 560 }}
+                        action={
+                            <Button color="inherit" size="small" onClick={save} disabled={saving}>
+                                {saving ? 'Retrying…' : 'Retry'}
+                            </Button>
+                        }
+                    >
+                        Couldn't save this run. Your answers are still here — retry to keep it.
+                    </Alert>
+                )}
 
                 <Typography
                     variant="h4"
@@ -85,7 +106,7 @@ export default function Summary() {
                     sx={{
                         background: gauntletWon
                             ? 'linear-gradient(135deg, #10b981, #06b6d4)'
-                            : 'linear-gradient(135deg, #6366f1, #ec4899)',
+                            : gradientTextSx.background,
                         WebkitBackgroundClip: 'text',
                         WebkitTextFillColor: 'transparent',
                         backgroundClip: 'text',
@@ -106,12 +127,12 @@ export default function Summary() {
                         borderTop: '3px solid transparent',
                         borderImage: gauntletWon
                             ? 'linear-gradient(135deg, #10b981, #06b6d4) 1'
-                            : 'linear-gradient(135deg, #6366f1, #ec4899) 1',
+                            : `${gradientTextSx.background} 1`,
                         borderImageSlice: 1,
                     }}
                 >
                     <Box sx={{ display: 'flex', justifyContent: 'space-around', flexWrap: 'wrap', gap: 2 }}>
-                        <Stat label="Score" value={score.toString()} />
+                        <Stat label="Score" value={(savedScore ?? score).toString()} />
                         <Stat label="Accuracy" value={`${accuracy}%`} />
                         <Stat label="Correct" value={`${correctCount} / ${answers.length}`} />
                         <Stat label="Best Streak" value={maxStreak.toString()} />
@@ -128,10 +149,7 @@ export default function Summary() {
                         size="large"
                         onClick={() => dispatch({ type: 'START_GAME', pool: state.pool })}
                         sx={{
-                            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                            '&:hover': {
-                                background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
-                            },
+                            ...gradientButtonSx,
                         }}
                     >
                         Play Again
@@ -179,7 +197,7 @@ export default function Summary() {
                                 >
                                     <ListItemAvatar>
                                         <Avatar
-                                            src={entityFlagUrl(a.flagUrl, a.isoCode)}
+                                            src={a.flagUrl}
                                             variant="rounded"
                                             sx={{ width: 48, height: 32, mr: 1, bgcolor: 'transparent' }}
                                         />

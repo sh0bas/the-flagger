@@ -33,8 +33,9 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """Dependency for getting database sessions."""
     async with AsyncSessionLocal() as session:
         try:
+            # No commit here: writers commit explicitly, so committing on every
+            # request added a round-trip to every read.
             yield session
-            await session.commit()
         except Exception:
             await session.rollback()
             raise
