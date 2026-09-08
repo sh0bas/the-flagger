@@ -12,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.core.config import settings
 from app.core.database import Base
-from app.models import user, game, friendship, block, country
+from app.models import user, game, country
 
 # this is the Alembic Config object
 config = context.config

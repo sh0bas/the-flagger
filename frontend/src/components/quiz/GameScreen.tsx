@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { Box, Chip, Typography, LinearProgress, Tooltip } from '@mui/material'
 import WarningAmberIcon from '@mui/icons-material/WarningAmber'
 import PlaceIcon from '@mui/icons-material/Place'
@@ -31,24 +31,16 @@ const REGION_LABELS: Record<string, string> = {
     oceania: 'Oceania',
 }
 
-// For US states, the hint label uses entity_type instead of region
-const ENTITY_TYPE_LABELS: Record<string, string> = {
-    us_state: 'the United States',
-}
-
-/** Flag URL for an entity. */
-function entityFlagUrl(_flagUrl: string, iso: string): string {
-    // US states: flagcdn.com supports "us-xx" lowercase subdivision codes
-    if (iso.startsWith('US-')) {
-        return `https://flagcdn.com/w320/${iso.toLowerCase()}.png`
-    }
-    return `https://cdn.jsdelivr.net/npm/country-flag-icons@1.6.15/3x2/${iso.toUpperCase()}.svg`
-}
-
 export default function GameScreen() {
     const { state, dispatch, filteredPool } = useQuiz()
     const { currentEntity, phase, config, streak, score, currentRound, queue, currentIndex, lastAnswer } = state
     const questionStartRef = useRef<number>(Date.now())
+
+    // Suggestions come from the pool already in memory, so typing costs no requests.
+    const answerOptions = useMemo(
+        () => Array.from(new Set(filteredPool.flatMap((e) => [e.name, ...(e.alt_names ?? [])]))),
+        [filteredPool]
+    )
 
     // Reset timer when entity changes
     useEffect(() => {
@@ -60,8 +52,14 @@ export default function GameScreen() {
         const nextEntity = queue[currentIndex + 1]
         if (!nextEntity) return
         const img = new Image()
-        img.src = entityFlagUrl(nextEntity.flag_url, nextEntity.iso_code)
+        img.src = nextEntity.flag_url
     }, [currentIndex, queue])
+
+    // Stable identity: FeedbackOverlay keys its advance timer off this, so a
+    // re-render during feedback would otherwise restart the countdown.
+    const handleFeedbackDone = useCallback(() => {
+        dispatch({ type: 'ADVANCE' })
+    }, [dispatch])
 
     if (!currentEntity) return null
 
@@ -76,10 +74,6 @@ export default function GameScreen() {
     const handleSubmit = (answer: string) => {
         const responseMs = Date.now() - questionStartRef.current
         dispatch({ type: 'SUBMIT_ANSWER', userAnswer: answer, responseMs })
-    }
-
-    const handleFeedbackDone = () => {
-        dispatch({ type: 'ADVANCE' })
     }
 
     // Session info per mode
@@ -173,8 +167,11 @@ export default function GameScreen() {
             >
                 <Box
                     component="img"
-                    src={entityFlagUrl(currentEntity.flag_url, currentEntity.iso_code)}
-                    alt="Flag"
+                    src={currentEntity.flag_url}
+                    // Same asset at 2x for the 480px display box.
+                    srcSet={`${currentEntity.flag_url} 1x, ${currentEntity.flag_url.replace('/w320/', '/w640/')} 2x`}
+                    // ponytail: deliberately not the country name — that would be the answer.
+                    alt="Flag to identify"
                     sx={{
                         width: '100%',
                         height: 'auto',
@@ -215,7 +212,7 @@ export default function GameScreen() {
 
             {/* Input */}
             <AutocompleteInput
-                filters={config.filters}
+                options={answerOptions}
                 onSubmit={handleSubmit}
                 disabled={phase === 'feedback'}
                 autoFocus

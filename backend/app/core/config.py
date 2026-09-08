@@ -9,7 +9,6 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     
     # Redis
-    REDIS_URL: str = "redis://redis:6379/0"
     
     # JWT
     SECRET_KEY: str
@@ -23,7 +22,7 @@ class Settings(BaseSettings):
     # Application
     PROJECT_NAME: str = "Flagger"
     VERSION: str = "1.0.0"
-    DEBUG: bool = True
+    DEBUG: bool = False
     
     model_config = SettingsConfigDict(
         env_file=["../.env", ".env"],

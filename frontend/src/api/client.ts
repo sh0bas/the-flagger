@@ -59,4 +59,21 @@ apiClient.interceptors.response.use(
     }
 )
 
+/**
+ * Human-readable message from an API error.
+ *
+ * FastAPI returns `detail` as a string for HTTPException but as an array of
+ * {loc, msg, type} objects for 422 validation errors — rendering that array
+ * directly gives the user "[object Object]".
+ */
+export function errorMessage(err: unknown, fallback: string): string {
+    const detail = axios.isAxiosError(err) ? err.response?.data?.detail : undefined
+    if (typeof detail === 'string') return detail
+    if (Array.isArray(detail)) {
+        const msgs = detail.map((d) => d?.msg).filter(Boolean)
+        if (msgs.length) return msgs.join('. ')
+    }
+    return fallback
+}
+
 export default apiClient

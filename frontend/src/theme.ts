@@ -1,4 +1,5 @@
-import { createTheme, type PaletteMode } from '@mui/material/styles'
+import { createTheme } from '@mui/material/styles'
+import type { PaletteMode } from '@mui/material'
 
 export function buildTheme(mode: PaletteMode) {
     const isDark = mode === 'dark'
@@ -42,7 +43,9 @@ export function buildTheme(mode: PaletteMode) {
             divider: isDark ? 'rgba(148, 163, 184, 0.12)' : 'rgba(15, 23, 42, 0.08)',
         },
         typography: {
-            fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+            // ponytail: system stack, not a webfont. Nothing here ships Inter, so naming it
+            // just cost a fallback hop. Add @fontsource/inter if the brand needs it.
+            fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
             h1: { fontWeight: 800, letterSpacing: '-0.02em' },
             h2: { fontWeight: 700, letterSpacing: '-0.01em' },
             h3: { fontWeight: 700 },
@@ -65,6 +68,15 @@ export function buildTheme(mode: PaletteMode) {
                         // Always reserve scrollbar width to prevent layout shift when
                         // dropdown content makes the page taller than the viewport.
                         overflowY: 'scroll',
+                    },
+                    // Honour the OS reduce-motion setting for every MUI Fade,
+                    // hover transform and transition in one place.
+                    '@media (prefers-reduced-motion: reduce)': {
+                        '*, *::before, *::after': {
+                            animationDuration: '0.01ms !important',
+                            transitionDuration: '0.01ms !important',
+                            scrollBehavior: 'auto !important',
+                        },
                     },
                     '*::-webkit-scrollbar': { width: 8 },
                     '*::-webkit-scrollbar-track': { background: 'transparent' },
@@ -183,4 +195,28 @@ export function buildTheme(mode: PaletteMode) {
     })
 }
 
-export default buildTheme('light')
+// Brand gradients. These literals were copy-pasted across eight files; the
+// violet stops appear nowhere else, not even in the palette.
+export const BRAND = {
+    indigo: '#6366f1',
+    indigoDark: '#4f46e5',
+    violet: '#8b5cf6',
+    violetDark: '#7c3aed',
+    pink: '#ec4899',
+} as const
+
+/** Gradient-filled heading text. */
+export const gradientTextSx = {
+    background: `linear-gradient(135deg, ${BRAND.indigo}, ${BRAND.pink})`,
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text',
+} as const
+
+/** Primary call-to-action button. */
+export const gradientButtonSx = {
+    background: `linear-gradient(135deg, ${BRAND.indigo}, ${BRAND.violet})`,
+    '&:hover': {
+        background: `linear-gradient(135deg, ${BRAND.indigoDark}, ${BRAND.violetDark})`,
+    },
+} as const

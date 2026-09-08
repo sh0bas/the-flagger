@@ -16,12 +16,6 @@ async def get_user_by_id(db: AsyncSession, user_id: UUID) -> Optional[User]:
     return result.scalar_one_or_none()
 
 
-async def get_user_by_username(db: AsyncSession, username: str) -> Optional[User]:
-    """Get user by username."""
-    result = await db.execute(select(User).where(User.username == username))
-    return result.scalar_one_or_none()
-
-
 async def update_user(db: AsyncSession, user_id: UUID, user_in: UserUpdate) -> User:
     """Update user profile."""
     user = await get_user_by_id(db, user_id)
@@ -52,16 +46,3 @@ async def update_user(db: AsyncSession, user_id: UUID, user_in: UserUpdate) -> U
     await db.refresh(user)
     
     return user
-
-
-async def search_users(db: AsyncSession, query: str, limit: int = 10) -> List[User]:
-    """Search users by username or display name."""
-    stmt = select(User).where(
-        or_(
-            User.username.ilike(f"%{query}%"),
-            User.display_name.ilike(f"%{query}%")
-        )
-    ).limit(limit)
-    
-    result = await db.execute(stmt)
-    return result.scalars().all()

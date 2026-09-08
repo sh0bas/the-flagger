@@ -1,54 +1,9 @@
 """Game-related schemas."""
 from datetime import datetime
+from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, Field
-
-
-class GameCreate(BaseModel):
-    """Game creation schema."""
-    game_mode: str = Field(..., pattern=r'^(flag_to_country|country_to_capital|capital_to_country)$')
-    regions: list[str] = Field(default_factory=list)
-    questions_count: int = Field(default=20, ge=5, le=50)
-
-
-class Option(BaseModel):
-    """Answer option schema."""
-    id: int
-    name: str
-    capital: str
-
-
-class Question(BaseModel):
-    """Question schema."""
-    id: str
-    text: str
-    image_url: str | None = None
-    options: list[Option]
-    correct_country_id: int | None = None  # Optional, for debugging or if client validates
-
-
-class AnswerSubmission(BaseModel):
-    """Answer submission schema."""
-    question_id: str
-    selected_option_id: int
-    response_time_ms: int = Field(..., ge=0)
-
-
-class AnswerResult(BaseModel):
-    """Answer result schema."""
-    correct: bool
-    correct_option_id: int
-    points_earned: int
-    streak: int
-
-
-class GameResult(BaseModel):
-    """Game result submission schema."""
-    score: int
-    correct_count: int
-    avg_response_ms: int
-    max_streak: int
+from pydantic import BaseModel, Field, model_validator
 
 
 class GameSessionResponse(BaseModel):
@@ -56,6 +11,8 @@ class GameSessionResponse(BaseModel):
     id: UUID
     game_mode: str
     regions: list[str]
+    entity_types: list[str]
+    difficulties: list[str]
     score: int
     questions_count: int
     correct_count: int
@@ -68,22 +25,30 @@ class GameSessionResponse(BaseModel):
 
 
 class FlagQuizAnswer(BaseModel):
-    """Individual answer record for a client-side flag quiz."""
+    """One answer as the player gave it. Correctness is decided server-side."""
     country_id: int
-    user_answer: str
-    correct: bool
-    response_ms: int
+    user_answer: str = Field(..., max_length=100)
+    response_ms: int = Field(..., ge=0, le=600_000)
 
 
 class FlagQuizResult(BaseModel):
-    """Result payload from a completed client-side flag quiz session."""
-    game_mode: str = Field(..., pattern=r'^(practice|endless|gauntlet)$')
+    """A completed client-side flag quiz.
+
+    Deliberately carries no score, correct_count, questions_count, max_streak or
+    avg_response_ms: the server derives all of them from `answers`. There is no
+    client-supplied number here to validate, so there is no way to inflate one.
+    """
+    game_mode: Literal['practice', 'endless', 'gauntlet']
     regions: list[str] = Field(default_factory=list)
     entity_types: list[str] = Field(default_factory=list)
     difficulties: list[str] = Field(default_factory=list)
-    score: int = Field(default=0, ge=0)
-    correct_count: int = Field(default=0, ge=0)
-    questions_count: int = Field(default=0, ge=0)
-    max_streak: int = Field(default=0, ge=0)
-    avg_response_ms: int = Field(default=0, ge=0)
-    answers: list[FlagQuizAnswer] = Field(default_factory=list)
+    answers: list[FlagQuizAnswer] = Field(..., min_length=1, max_length=1000)
+
+    @model_validator(mode="after")
+    def _no_repeated_countries(self):
+        # A real playthrough never asks the same flag twice; repeating one
+        # easy country_id is how a crafted payload would farm streak bonus.
+        ids = [a.country_id for a in self.answers]
+        if len(ids) != len(set(ids)):
+            raise ValueError("answers must not repeat the same country_id")
+        return self

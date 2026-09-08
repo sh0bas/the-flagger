@@ -23,6 +23,8 @@ export default function FeedbackOverlay({ answer, onDone }: Props) {
     return (
         <Fade in timeout={200}>
             <Box
+                role="status"
+                aria-live="polite"
                 sx={{
                     position: 'absolute',
                     inset: 0,

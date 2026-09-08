@@ -2,22 +2,11 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Column, DateTime, Enum, ForeignKey, Integer, ARRAY, String, Boolean
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, ARRAY, String, Boolean
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
-import enum
 
 from app.core.database import Base
-
-
-class GameModeEnum(str, enum.Enum):
-    """Game mode enumeration."""
-    FLAG_TO_COUNTRY = "flag_to_country"
-    COUNTRY_TO_CAPITAL = "country_to_capital"
-    CAPITAL_TO_COUNTRY = "capital_to_country"
-    PRACTICE = "practice"
-    ENDLESS = "endless"
-    GAUNTLET = "gauntlet"
 
 
 class GameSession(Base):
@@ -27,8 +16,12 @@ class GameSession(Base):
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
-    game_mode = Column(Enum(GameModeEnum, values_callable=lambda obj: [e.value for e in obj]), nullable=False, index=True)
+    # Plain text: the allowed set is enforced by FlagQuizResult, at the trust
+    # boundary. A DB enum only bought migrations every time a mode was added.
+    game_mode = Column(String(20), nullable=False, index=True)
     regions = Column(ARRAY(String), nullable=False, default=list)
+    entity_types = Column(ARRAY(String), nullable=False, default=list)
+    difficulties = Column(ARRAY(String), nullable=False, default=list)
 
     # Game state
     country_ids = Column(ARRAY(Integer), nullable=False, default=list)  # Sequence of country IDs for questions

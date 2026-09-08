@@ -9,7 +9,9 @@ import {
     Alert,
     Paper,
 } from '@mui/material'
+import { errorMessage } from '../api/client'
 import { useAuth } from '../contexts/AuthContext'
+import { gradientButtonSx, gradientTextSx } from '../theme'
 
 export default function Login() {
     const navigate = useNavigate()
@@ -27,8 +29,8 @@ export default function Login() {
         try {
             await login({ username, password })
             navigate('/')
-        } catch (err: any) {
-            setError(err.response?.data?.detail || 'Login failed. Please try again.')
+        } catch (err) {
+            setError(errorMessage(err, 'Login failed. Please try again.'))
         } finally {
             setLoading(false)
         }
@@ -64,10 +66,7 @@ export default function Login() {
                         component="h1"
                         sx={{
                             fontWeight: 800,
-                            background: 'linear-gradient(135deg, #6366f1, #ec4899)',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                            backgroundClip: 'text',
+                            ...gradientTextSx,
                             mb: 1,
                         }}
                     >
@@ -115,10 +114,7 @@ export default function Login() {
                             mt: 3,
                             mb: 2,
                             py: 1.5,
-                            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                            '&:hover': {
-                                background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
-                            },
+                            ...gradientButtonSx,
                             '&.Mui-disabled': {
                                 background: (theme) =>
                                     theme.palette.mode === 'dark'

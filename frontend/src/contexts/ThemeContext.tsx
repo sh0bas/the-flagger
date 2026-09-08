@@ -20,7 +20,8 @@ export function useThemeMode() {
 export function AppThemeProvider({ children }: { children: ReactNode }) {
     const [mode, setMode] = useState<ThemeMode>(() => {
         const stored = localStorage.getItem('themeMode')
-        return stored === 'dark' ? 'dark' : 'light'
+        if (stored === 'dark' || stored === 'light') return stored
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
     })
 
     const toggleTheme = () => {

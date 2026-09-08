@@ -12,11 +12,6 @@ class UserBase(BaseModel):
     display_name: str | None = None
 
 
-class UserCreate(UserBase):
-    """User creation schema."""
-    password: str = Field(..., min_length=8)
-
-
 class UserUpdate(BaseModel):
     """User update schema."""
     display_name: str | None = Field(None, max_length=50)
@@ -29,29 +24,6 @@ class UserResponse(UserBase):
     avatar_url: str | None
     email_verified: bool
     created_at: datetime
-    
-    class Config:
-        from_attributes = True
-
-
-class UserPublic(BaseModel):
-    """Public user profile schema."""
-    id: UUID
-    username: str
-    display_name: str | None
-    avatar_url: str | None
-    created_at: datetime
-    
-    class Config:
-        from_attributes = True
-
-
-class UserSearch(BaseModel):
-    """User search result schema."""
-    id: UUID
-    username: str
-    display_name: str | None
-    avatar_url: str | None
     
     class Config:
         from_attributes = True
