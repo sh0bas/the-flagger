@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { fetchCatalog } from '../api/flagQuiz'
-import { useQuizReducer, initialState } from '../hooks/useQuizReducer'
+import { useQuizReducer } from '../hooks/useQuizReducer'
 import type { QuizState, FlagEntity } from '../types'
 import type { QuizAction } from '../hooks/useQuizReducer'
 

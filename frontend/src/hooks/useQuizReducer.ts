@@ -66,18 +66,8 @@ export const initialState: QuizState = {
     score: 0,
     incorrectCarryForward: [],
     currentRound: 1,
-    slidingHistory: [],
     failed: false,
     gauntletWon: false,
-}
-
-// ── endless: pick next flag honouring 30-flag sliding window ──────────────────
-
-function pickNextEndless(pool: FlagEntity[], slidingHistory: number[]): FlagEntity | null {
-    if (pool.length === 0) return null
-    const available = pool.filter((e) => !slidingHistory.includes(e.id))
-    const source = available.length > 0 ? available : pool
-    return source[Math.floor(Math.random() * source.length)]
 }
 
 // ── reducer ───────────────────────────────────────────────────────────────────
@@ -121,14 +111,16 @@ function quizReducer(state: QuizState, action: QuizAction): QuizState {
                 }
             }
 
-            // endless
-            const first = pickNextEndless(pool, [])!
+            // Endless runs the whole pool in shuffled order, reshuffling on
+            // exhaustion. A queue (rather than random picks) both guarantees no
+            // repeats and lets GameScreen preload queue[i + 1].
+            const endlessQueue = shuffle(pool)
             return {
                 ...initialState,
                 config,
                 pool,
-                queue: [],
-                currentEntity: first,
+                queue: endlessQueue,
+                currentEntity: endlessQueue[0],
                 currentIndex: 0,
                 phase: 'playing',
             }
@@ -218,17 +210,24 @@ function quizReducer(state: QuizState, action: QuizAction): QuizState {
             }
 
             if (config.mode === 'endless') {
-                const newHistory = [
-                    ...state.slidingHistory.slice(-29),
-                    state.currentEntity!.id,
-                ]
-                const next = pickNextEndless(pool, newHistory)
-                if (!next) return { ...state, phase: 'summary' }
+                const nextIdx = state.currentIndex + 1
+                if (nextIdx < queue.length) {
+                    return {
+                        ...state,
+                        currentEntity: queue[nextIdx],
+                        currentIndex: nextIdx,
+                        lastAnswer: null,
+                        phase: 'playing',
+                    }
+                }
+                // Pool exhausted: reshuffle and keep going.
+                const reshuffled = shuffle(pool)
+                if (reshuffled.length === 0) return { ...state, phase: 'summary' }
                 return {
                     ...state,
-                    currentEntity: next,
-                    currentIndex: state.currentIndex + 1,
-                    slidingHistory: newHistory,
+                    queue: reshuffled,
+                    currentEntity: reshuffled[0],
+                    currentIndex: 0,
                     lastAnswer: null,
                     phase: 'playing',
                 }
