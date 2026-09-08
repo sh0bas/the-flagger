@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class GameSessionResponse(BaseModel):
@@ -41,3 +41,12 @@ class FlagQuizResult(BaseModel):
     entity_types: list[str] = Field(default_factory=list)
     difficulties: list[str] = Field(default_factory=list)
     answers: list[FlagQuizAnswer] = Field(default_factory=list, max_length=1000)
+
+    @model_validator(mode="after")
+    def _no_repeated_countries(self):
+        # A real playthrough never asks the same flag twice; repeating one
+        # easy country_id is how a crafted payload would farm streak bonus.
+        ids = [a.country_id for a in self.answers]
+        if len(ids) != len(set(ids)):
+            raise ValueError("answers must not repeat the same country_id")
+        return self

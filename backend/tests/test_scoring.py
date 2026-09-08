@@ -8,7 +8,11 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import pytest
+from pydantic import ValidationError
+
 from app.api.routes.games import _points, grade
+from app.schemas.game import FlagQuizAnswer, FlagQuizResult
 from app.services.country_service import normalize_str
 
 
@@ -29,6 +33,12 @@ class TestPoints:
 
     def test_bonuses_stack(self):
         assert _points(1_000, 5) == 100 + 50 + 50
+
+    def test_streak_bonus_is_capped(self):
+        """Repeating one easy answer must not let the streak bonus grow forever."""
+        assert _points(11_000, 20) == 100 + 200
+        assert _points(11_000, 21) == 100 + 200
+        assert _points(11_000, 1000) == 100 + 200
 
 
 class TestNormalize:
@@ -103,3 +113,23 @@ class TestGrade:
         assert out["questions_count"] == 2
         assert out["avg_response_ms"] == 200
         assert out["score"] == 150  # one correct, fast
+
+
+class TestFlagQuizResultRejectsRepeatedCountries:
+    """The API boundary, not grade(), is what stops the farm-one-flag exploit."""
+
+    def _result(self, *country_ids):
+        return FlagQuizResult(
+            game_mode="gauntlet",
+            answers=[
+                FlagQuizAnswer(country_id=cid, user_answer="x", response_ms=100)
+                for cid in country_ids
+            ],
+        )
+
+    def test_unique_country_ids_accepted(self):
+        self._result(1, 2, 3)  # must not raise
+
+    def test_repeated_country_id_rejected(self):
+        with pytest.raises(ValidationError):
+            self._result(1, 1, 2)

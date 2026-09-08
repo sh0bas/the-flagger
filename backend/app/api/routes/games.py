@@ -28,6 +28,7 @@ router = APIRouter()
 FAST_MS = 5_000
 MEDIUM_MS = 10_000
 STREAK_THRESHOLD = 3
+MAX_STREAK_BONUS = 20  # bounds per-answer score even on an all-correct full-catalog run
 
 
 def _points(response_ms: int, streak: int) -> int:
@@ -38,7 +39,7 @@ def _points(response_ms: int, streak: int) -> int:
     elif response_ms < MEDIUM_MS:
         points += 25
     if streak >= STREAK_THRESHOLD:
-        points += 10 * streak
+        points += 10 * min(streak, MAX_STREAK_BONUS)
     return points
 
 

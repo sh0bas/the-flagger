@@ -27,11 +27,13 @@ function shuffle<T>(arr: T[]): T[] {
     return a
 }
 
+const MAX_STREAK_BONUS = 20 // kept in sync with games.py's _points()
+
 function calcScore(responseMs: number, streak: number): number {
     let pts = 100
     if (responseMs < 5000) pts += 50
     else if (responseMs < 10000) pts += 25
-    if (streak >= 3) pts += streak * 10
+    if (streak >= 3) pts += Math.min(streak, MAX_STREAK_BONUS) * 10
     return pts
 }
 
