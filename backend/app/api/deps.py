@@ -75,8 +75,17 @@ _hits: dict[str, list[float]] = defaultdict(list)
 
 def rate_limit(request: Request) -> None:
     """Cap unauthenticated auth attempts per client IP."""
+    # ponytail: raw peer address, no X-Forwarded-For handling. Behind a load
+    # balancer that doesn't forward the real client IP, every request
+    # collapses onto one key. Add a vetted X-Forwarded-For read (trusting
+    # only a known proxy hop) if this ever sits behind one.
     client = request.client.host if request.client else "unknown"
     now = time.monotonic()
+
+    # Evict clients whose whole window has already expired, so the dict stays
+    # bounded to currently-active clients instead of every IP ever seen.
+    for key in [k for k, hits in _hits.items() if not any(now - t < _RATE_WINDOW_S for t in hits)]:
+        del _hits[key]
 
     recent = [t for t in _hits[client] if now - t < _RATE_WINDOW_S]
     if len(recent) >= _RATE_LIMIT:
