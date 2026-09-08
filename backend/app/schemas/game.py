@@ -11,6 +11,8 @@ class GameSessionResponse(BaseModel):
     id: UUID
     game_mode: str
     regions: list[str]
+    entity_types: list[str]
+    difficulties: list[str]
     score: int
     questions_count: int
     correct_count: int

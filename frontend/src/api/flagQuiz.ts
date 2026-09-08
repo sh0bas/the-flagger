@@ -22,6 +22,9 @@ export interface SaveResultPayload {
 export interface SavedGame {
     id: string
     game_mode: string
+    regions: string[]
+    entity_types: string[]
+    difficulties: string[]
     score: number
     questions_count: number
     correct_count: number

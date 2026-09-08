@@ -20,6 +20,8 @@ class GameSession(Base):
     # boundary. A DB enum only bought migrations every time a mode was added.
     game_mode = Column(String(20), nullable=False, index=True)
     regions = Column(ARRAY(String), nullable=False, default=list)
+    entity_types = Column(ARRAY(String), nullable=False, default=list)
+    difficulties = Column(ARRAY(String), nullable=False, default=list)
 
     # Game state
     country_ids = Column(ARRAY(Integer), nullable=False, default=list)  # Sequence of country IDs for questions
