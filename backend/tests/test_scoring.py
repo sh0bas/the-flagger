@@ -125,6 +125,14 @@ class TestFlagQuizResultRejectsRepeatedCountries:
     def test_unique_country_ids_accepted(self):
         self._result(1, 2, 3)  # must not raise
 
+    def test_empty_answers_rejected(self):
+        with pytest.raises(ValidationError):
+            self._result()  # no country_ids -> answers=[]
+
+    def test_omitted_answers_rejected(self):
+        with pytest.raises(ValidationError):
+            FlagQuizResult(game_mode="gauntlet")
+
     def test_repeated_country_id_rejected(self):
         with pytest.raises(ValidationError):
             self._result(1, 1, 2)

@@ -42,7 +42,7 @@ class FlagQuizResult(BaseModel):
     regions: list[str] = Field(default_factory=list)
     entity_types: list[str] = Field(default_factory=list)
     difficulties: list[str] = Field(default_factory=list)
-    answers: list[FlagQuizAnswer] = Field(default_factory=list, max_length=1000)
+    answers: list[FlagQuizAnswer] = Field(..., min_length=1, max_length=1000)
 
     @model_validator(mode="after")
     def _no_repeated_countries(self):
