@@ -3,12 +3,17 @@
 Fetches country data from REST Countries API and populates the database.
 """
 import asyncio
+import sys
+import os
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import httpx
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
-from app.models.country import Country, RegionEnum
+from app.models.country import Country, RegionEnum, EntityTypeEnum
 
 
 # Map REST Countries regions/subregions to our simplified regions
@@ -23,11 +28,15 @@ REGION_MAPPING = {
 
 
 async def fetch_countries():
-    """Fetch country data from REST Countries API."""
+    """Fetch country data.
+
+    restcountries.com v3.1 was sunset and v5 now requires a paid API key, so
+    this pulls the same shape (name/capital/region/cca2/altSpellings/
+    independent/status) from mledoze/countries, a static MIT-licensed mirror.
+    """
     async with httpx.AsyncClient() as client:
         response = await client.get(
-            "https://restcountries.com/v3.1/all",
-            params={"fields": "name,capital,region,cca2,altSpellings,independent,status"}
+            "https://raw.githubusercontent.com/mledoze/countries/master/countries.json"
         )
         response.raise_for_status()
         return response.json()
@@ -40,8 +49,10 @@ async def seed_countries():
     countries_data = await fetch_countries()
     
     async with AsyncSessionLocal() as session:
-        # Check if countries already exist
-        result = await session.execute(select(Country))
+        # Check if countries already exist (US states may already be seeded separately)
+        result = await session.execute(
+            select(Country).where(Country.entity_type == EntityTypeEnum.SOVEREIGN_STATE)
+        )
         existing = result.scalars().first()
         
         if existing:
@@ -86,7 +97,8 @@ async def seed_countries():
                 flag_url=flag_url,
                 iso_code=iso_code,
                 alt_names=alt_names[:5],  # Limit to 5 alternative names
-                is_independent=is_independent
+                is_independent=is_independent,
+                entity_type=EntityTypeEnum.SOVEREIGN_STATE if is_independent else EntityTypeEnum.TERRITORY,
             )
             
             session.add(country)
