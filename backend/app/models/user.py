@@ -26,27 +26,3 @@ class User(Base):
     
     # Relationships
     game_sessions = relationship("GameSession", back_populates="user", cascade="all, delete-orphan")
-    sent_friend_requests = relationship(
-        "Friendship",
-        foreign_keys="Friendship.requester_id",
-        back_populates="requester",
-        cascade="all, delete-orphan"
-    )
-    received_friend_requests = relationship(
-        "Friendship",
-        foreign_keys="Friendship.addressee_id",
-        back_populates="addressee",
-        cascade="all, delete-orphan"
-    )
-    blocked_users = relationship(
-        "Block",
-        foreign_keys="Block.blocker_id",
-        back_populates="blocker",
-        cascade="all, delete-orphan"
-    )
-    blocked_by = relationship(
-        "Block",
-        foreign_keys="Block.blocked_id",
-        back_populates="blocked",
-        cascade="all, delete-orphan"
-    )
