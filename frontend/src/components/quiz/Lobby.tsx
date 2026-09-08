@@ -67,6 +67,12 @@ const MODES: { value: FlagQuizMode; label: string; description: string; icon: Re
     },
 ]
 
+// Derived, not re-typed, so a rename/addition to MODES above can't drift out
+// of sync with what other views (e.g. History) display.
+export const MODE_LABELS: Record<FlagQuizMode, string> = Object.fromEntries(
+    MODES.map((m) => [m.value, m.label])
+) as Record<FlagQuizMode, string>
+
 const BATCH_MARKS = [
     { value: 5, label: '5' },
     { value: 10, label: '10' },

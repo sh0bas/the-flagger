@@ -13,12 +13,7 @@ import {
     Typography,
 } from '@mui/material'
 import { fetchHistory } from '../api/flagQuiz'
-
-const MODE_LABELS: Record<string, string> = {
-    practice: 'Practice',
-    endless: 'Endless',
-    gauntlet: 'Gauntlet',
-}
+import { MODE_LABELS } from '../components/quiz/Lobby'
 
 export default function History() {
     const { data, isLoading, isError } = useQuery({
@@ -68,7 +63,7 @@ export default function History() {
                                             primary={
                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                                     <Chip
-                                                        label={MODE_LABELS[g.game_mode] ?? g.game_mode}
+                                                        label={(MODE_LABELS as Record<string, string>)[g.game_mode] ?? g.game_mode}
                                                         size="small"
                                                     />
                                                     <Typography variant="body2" color="text.secondary">
