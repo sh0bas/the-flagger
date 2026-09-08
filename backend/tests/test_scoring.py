@@ -3,11 +3,6 @@
 Both have a hand-synced counterpart in the frontend, so drift is the risk being
 guarded against here, not obvious breakage.
 """
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-
 import pytest
 from pydantic import ValidationError
 
