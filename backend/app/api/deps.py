@@ -1,7 +1,10 @@
 """API dependencies."""
+import time
+import uuid
+from collections import defaultdict
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -41,7 +44,15 @@ async def get_current_user(
             detail="Invalid authentication credentials",
         )
     
-    result = await db.execute(select(User).where(User.id == user_id))
+    try:
+        user_uuid = uuid.UUID(user_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication credentials",
+        )
+
+    result = await db.execute(select(User).where(User.id == user_uuid))
     user = result.scalar_one_or_none()
     
     if user is None:
@@ -53,16 +64,28 @@ async def get_current_user(
     return user
 
 
-# Optional dependency for endpoints that work with or without authentication
-async def get_current_user_optional(
-    db: Annotated[AsyncSession, Depends(get_db)],
-    credentials: HTTPAuthorizationCredentials | None = Depends(HTTPBearer(auto_error=False))
-) -> User | None:
-    """Get the current user if authenticated, else None."""
-    if not credentials:
-        return None
-    
-    try:
-        return await get_current_user(credentials, db)
-    except HTTPException:
-        return None
+# ── rate limiting ────────────────────────────────────────────────────────────
+# ponytail: in-process sliding window, no Redis. Correct for a single uvicorn
+# worker; behind a load balancer each worker gets its own budget, so swap in a
+# shared store if this ever runs replicated.
+_RATE_LIMIT = 10
+_RATE_WINDOW_S = 60
+_hits: dict[str, list[float]] = defaultdict(list)
+
+
+def rate_limit(request: Request) -> None:
+    """Cap unauthenticated auth attempts per client IP."""
+    client = request.client.host if request.client else "unknown"
+    now = time.monotonic()
+
+    recent = [t for t in _hits[client] if now - t < _RATE_WINDOW_S]
+    if len(recent) >= _RATE_LIMIT:
+        _hits[client] = recent
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many attempts. Try again in a minute.",
+            headers={"Retry-After": str(_RATE_WINDOW_S)},
+        )
+
+    recent.append(now)
+    _hits[client] = recent

@@ -2,23 +2,28 @@
 from datetime import datetime, timedelta
 from typing import Any, Optional
 
+import bcrypt
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 
 from app.core.config import settings
 
-# Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# bcrypt directly rather than through passlib: existing $2b$ hashes verify
+# unchanged, and it drops a dependency plus the passlib/bcrypt-4.1 warning spam.
+# Both calls block for ~250ms, so callers must run them off the event loop.
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a plain password against a hashed password."""
-    return pwd_context.verify(plain_password, hashed_password)
+    try:
+        return bcrypt.checkpw(plain_password.encode(), hashed_password.encode())
+    except ValueError:
+        # Malformed hash in the database — treat as a failed login, not a 500.
+        return False
 
 
 def get_password_hash(password: str) -> str:
     """Hash a password using bcrypt."""
-    return pwd_context.hash(password)
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
 
 def create_access_token(subject: str | Any, expires_delta: Optional[timedelta] = None) -> str:

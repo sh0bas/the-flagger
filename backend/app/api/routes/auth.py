@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api import deps
 from app.core.database import get_db
 from app.core.security import decode_token, create_access_token
 from app.schemas.auth import RegisterRequest, TokenResponse, LoginRequest, RefreshRequest
@@ -16,7 +17,7 @@ from sqlalchemy import select
 router = APIRouter()
 
 
-@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(deps.rate_limit)])
 async def register(
     user_in: RegisterRequest,
     db: Annotated[AsyncSession, Depends(get_db)]
@@ -25,7 +26,7 @@ async def register(
     return await register_user(db, user_in)
 
 
-@router.post("/login", response_model=TokenResponse)
+@router.post("/login", response_model=TokenResponse, dependencies=[Depends(deps.rate_limit)])
 async def login(
     login_in: LoginRequest,
     db: Annotated[AsyncSession, Depends(get_db)]
@@ -34,7 +35,7 @@ async def login(
     return await authenticate_user(db, login_in)
 
 
-@router.post("/token", response_model=TokenResponse)
+@router.post("/token", response_model=TokenResponse, dependencies=[Depends(deps.rate_limit)])
 async def login_oauth2(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: Annotated[AsyncSession, Depends(get_db)]

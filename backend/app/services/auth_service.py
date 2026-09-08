@@ -6,6 +6,7 @@ from uuid import uuid4
 from fastapi import HTTPException, status
 from sqlalchemy import select, or_
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.concurrency import run_in_threadpool
 
 from app.core.security import get_password_hash, verify_password, create_access_token, create_refresh_token
 from app.models.user import User
@@ -38,7 +39,7 @@ async def register_user(db: AsyncSession, user_in: RegisterRequest) -> User:
     db_user = User(
         username=user_in.username,
         email=user_in.email,
-        password_hash=get_password_hash(user_in.password),
+        password_hash=await run_in_threadpool(get_password_hash, user_in.password),
         display_name=user_in.display_name or user_in.username,
         # For MVP, we'll auto-verify email or handle it loosely. 
         # In a real app, we'd send an email here.
@@ -63,7 +64,10 @@ async def authenticate_user(db: AsyncSession, login_in: LoginRequest) -> TokenRe
         result = await db.execute(select(User).where(User.email == login_in.username))
         user = result.scalar_one_or_none()
         
-    if not user or not verify_password(login_in.password, user.password_hash):
+    valid = user is not None and await run_in_threadpool(
+        verify_password, login_in.password, user.password_hash
+    )
+    if not valid:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
