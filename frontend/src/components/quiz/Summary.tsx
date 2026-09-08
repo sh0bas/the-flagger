@@ -105,7 +105,7 @@ export default function Summary() {
                     fontWeight={800}
                     sx={{
                         background: gauntletWon
-                            ? 'linear-gradient(135deg, #10b981, #06b6d4)'
+                            ? 'linear-gradient(135deg, #42C281, #f59e0b)'
                             : gradientTextSx.background,
                         WebkitBackgroundClip: 'text',
                         WebkitTextFillColor: 'transparent',
@@ -126,7 +126,7 @@ export default function Summary() {
                         border: (theme) => `1px solid ${theme.palette.divider}`,
                         borderTop: '3px solid transparent',
                         borderImage: gauntletWon
-                            ? 'linear-gradient(135deg, #10b981, #06b6d4) 1'
+                            ? 'linear-gradient(135deg, #42C281, #f59e0b) 1'
                             : `${gradientTextSx.background} 1`,
                         borderImageSlice: 1,
                     }}

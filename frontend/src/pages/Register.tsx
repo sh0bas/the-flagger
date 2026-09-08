@@ -66,8 +66,8 @@ export default function Register() {
                 py: 4,
                 background: (theme) =>
                     theme.palette.mode === 'dark'
-                        ? 'radial-gradient(ellipse at 70% 20%, rgba(236,72,153,0.10), transparent 50%), radial-gradient(ellipse at 30% 80%, rgba(99,102,241,0.12), transparent 50%)'
-                        : 'radial-gradient(ellipse at 70% 20%, rgba(236,72,153,0.05), transparent 50%), radial-gradient(ellipse at 30% 80%, rgba(99,102,241,0.07), transparent 50%)',
+                        ? 'radial-gradient(ellipse at 70% 20%, rgba(42,47,55,0.35), transparent 50%), radial-gradient(ellipse at 30% 80%, rgba(66,194,129,0.12), transparent 50%)'
+                        : 'radial-gradient(ellipse at 70% 20%, rgba(32,36,43,0.06), transparent 50%), radial-gradient(ellipse at 30% 80%, rgba(66,194,129,0.08), transparent 50%)',
             }}
         >
             <Paper
