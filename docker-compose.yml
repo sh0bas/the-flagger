@@ -18,18 +18,6 @@ services:
       timeout: 5s
       retries: 5
 
-  redis:
-    image: redis:7-alpine
-    container_name: flagger-redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   backend:
     build:
@@ -38,7 +26,6 @@ services:
     container_name: flagger-backend
     environment:
       DATABASE_URL: postgresql+asyncpg://flagger:flagger_dev_password@db:5432/flagger
-      REDIS_URL: redis://redis:6379/0
       SECRET_KEY: dev_secret_key_change_in_production_minimum_32_characters
       ACCESS_TOKEN_EXPIRE_MINUTES: 15
       REFRESH_TOKEN_EXPIRE_DAYS: 7
@@ -49,8 +36,6 @@ services:
       - ./backend:/app
     depends_on:
       db:
-        condition: service_healthy
-      redis:
         condition: service_healthy
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
@@ -73,4 +58,3 @@ services:
 
 volumes:
   postgres_data:
-  redis_data:
