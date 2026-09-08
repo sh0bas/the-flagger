@@ -47,6 +47,7 @@ export default function AutocompleteInput({
     autoFocus = true,
 }: Props) {
     const [value, setValue] = useState('')
+    const [highlighted, setHighlighted] = useState<string | null>(null)
     const inputRef = useRef<HTMLInputElement>(null)
 
     // Re-focus when the feedback overlay releases the input.
@@ -58,6 +59,7 @@ export default function AutocompleteInput({
         const trimmed = v.trim()
         if (!trimmed || disabled) return
         setValue('')
+        setHighlighted(null)
         onSubmit(trimmed)
     }
 
@@ -84,6 +86,7 @@ export default function AutocompleteInput({
             onChange={(_, v, reason) => {
                 if (reason === 'selectOption' && typeof v === 'string') submit(v)
             }}
+            onHighlightChange={(_, option) => setHighlighted(typeof option === 'string' ? option : null)}
             sx={{ width: '100%', maxWidth: 480 }}
             renderInput={(params) => (
                 <TextField
@@ -97,6 +100,13 @@ export default function AutocompleteInput({
                         if (e.key === 'Enter' && !(e.target as HTMLInputElement).getAttribute('aria-activedescendant')) {
                             e.preventDefault()
                             submit(value)
+                        } else if (e.key === 'Tab') {
+                            // Tab doesn't natively confirm an Autocomplete's highlighted
+                            // option (that's Enter); wire it up explicitly rather than
+                            // rely on autoSelect+blur, which would also fire on any
+                            // unrelated focus loss (window switch, clicking elsewhere).
+                            e.preventDefault()
+                            submit(highlighted ?? value)
                         }
                     }}
                 />
