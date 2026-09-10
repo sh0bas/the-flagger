@@ -75,5 +75,5 @@ postgres_data/
 redis_data/
 
 # Documentation (personal notes)
-*.md
+local-docs/
 !README.md
