@@ -111,9 +111,7 @@ export function buildTheme(mode: PaletteMode) {
                         },
                     },
                     contained: {
-                        boxShadow: '0 2px 8px rgba(66, 194, 129, 0.25)',
                         '&:hover': {
-                            boxShadow: '0 4px 16px rgba(66, 194, 129, 0.35)',
                             transform: 'translateY(-1px)',
                         },
                     },
@@ -216,7 +214,9 @@ export const gradientTextSx = {
 /** Primary call-to-action button. */
 export const gradientButtonSx = {
     background: `linear-gradient(135deg, ${BRAND.green}, ${BRAND.greenDark})`,
+    boxShadow: '0 2px 8px rgba(66, 194, 129, 0.25)',
     '&:hover': {
         background: `linear-gradient(135deg, ${BRAND.greenDark}, ${BRAND.green})`,
+        boxShadow: '0 4px 16px rgba(66, 194, 129, 0.35)',
     },
 } as const
