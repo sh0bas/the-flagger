@@ -51,7 +51,7 @@ The cap exists so a long correct run can't grow per-answer score without bound. 
 
 Both sides: NFD-decompose → strip combining marks `[̀-ͯ]` → lowercase → fold `'`/`'`/`` ` `` to `'` → trim.
 
-**Never reintroduce `.encode("ascii", "ignore")`.** It doesn't just drop accents — it deletes every character NFD doesn't decompose (`ß`, `ø`, and *entire* non-Latin scripts). Two different Cyrillic names both normalize to `""` and compare **equal**, which is a false positive, not merely a missed match. This was a real bug, fixed in `22423af`; a live check against all 295 catalog entries found 41 mismatches.
+**Never reintroduce `.encode("ascii", "ignore")`.** It doesn't just drop accents — it deletes every character NFD doesn't decompose (`ß`, `ø`, and *entire* non-Latin scripts). Two different Cyrillic names both normalize to `""` and compare **equal**, which is a false positive, not merely a missed match. This was a real bug, not a hypothetical — see `22423af` for the fix and the evidence behind it.
 
 Also note `.lower()` does not fold `ß` → `ss`. Verify actual output before asserting on it.
 
@@ -67,7 +67,7 @@ Two documented ceilings, both marked with `ponytail:` comments — respect them 
 
 ## When changing this code, verify
 
-- [ ] `cd backend && .venv/bin/python -m pytest tests/ -q` — 28 tests, and `test_scoring.py` is the file that matters here
+- [ ] `cd backend && .venv/bin/python -m pytest tests/ -q` — `test_scoring.py` is the file that matters here
 - [ ] If you touched `_points`, `MAX_STREAK_BONUS`, or the bonus tiers: update `calcScore()` in `frontend/src/hooks/useQuizReducer.ts` in the same change, and test each threshold at its exact boundary (`4_999` / `5_000` / `9_999` / `10_000`, streak `2` / `3`, cap at `20` / `21` / absurd)
 - [ ] If you touched `normalize_str`: update `normalizeForComparison()` to match, and assert non-Latin scripts survive *and* stay distinct from each other — not just that diacritics strip
 - [ ] If you touched `FlagQuizResult`: test the omitted case and the empty case separately (defaults bypass validation), plus duplicate `country_id` rejection

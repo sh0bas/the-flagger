@@ -1,6 +1,6 @@
 ---
-name: pr-review
-description: Review a GitHub PR and post findings as a single batched inline review, and/or write a PR description grounded in tests actually run. Use when the user asks to review a PR, post/leave a review on GitHub, write or update a PR description, or open a PR for the current branch. Covers determining the real base branch, the review checklist for this repo (React/TS + FastAPI), and the exact gh commands that work.
+name: flagger-pr-review
+description: Review a GitHub PR in the Flagger repo and post findings as a single batched inline review, and/or write a PR description grounded in tests actually run. Use when the user asks to review a PR, post/leave a review on GitHub, write or update a PR description, or open a PR for the current branch. Covers determining the real base branch, the review checklist for this repo (React/TS + FastAPI), and the exact gh commands that work. Deliberately named flagger-pr-review, not pr-review, to avoid being shadowed by the global pr-review skill.
 ---
 
 # PR review & description writing — Flagger
@@ -49,7 +49,7 @@ Review **only the changed code**, not the whole repo.
 | `pydantic` | `==2.5.0` | 2.5.0 | Early v2 — things added in 2.6+ (e.g. `Field(deprecated=...)`) are not available. |
 | `sqlalchemy` | `==2.0.23` | 2.0.23 | 2.0 available, but this codebase uses legacy `Column(...)`, not `Mapped[]`. |
 | `httpx` | `==0.25.2` | 0.25.2 | `AsyncClient(app=...)` still works here; the 0.28-style `ASGITransport`-only form is the newer API. |
-| `pytest` | `==7.4.3` | **9.1.1** | requirements.txt is out of date with the venv. Check behavior against 9.x. |
+| `pytest` | `==7.4.3` | **9.1.1 in `backend/.venv`, 7.4.3 in the container** | The venv has drifted from the pin; `backend/Dockerfile` installs `requirements.txt`, so `docker-compose exec backend pytest` runs 7.4.3 while `.venv/bin/python -m pytest` runs 9.x. Check behavior against whichever you're actually invoking. |
 
 Check a symbol before trusting it: `node -e "console.log(require('./node_modules/<pkg>/package.json').version)"` from `frontend/`, or `cd backend && .venv/bin/python -c "import x; print(x.__version__)"`.
 
@@ -85,7 +85,7 @@ cat > /tmp/review.json <<'EOF'
 {
   "commit_id": "<headRefOid>",
   "event": "COMMENT",
-  "body": "1-3 sentence overall summary.",
+  "body": "<summary of what the PR does — see 'Writing the body' below>",
   "comments": [
     { "path": "backend/app/api/routes/games.py", "line": 42, "side": "RIGHT",
       "body": "🟠 Important — <finding>" }
@@ -105,6 +105,37 @@ Always `--input <file>`. **Never** `-f body=@file` — that shortcut does not re
 
 Then verify it landed: `gh api repos/sh0bas/the-flagger/pulls/<number>/comments --jq '.[].body' | head` — confirm real prose, not a filename.
 
+To fix the body after submitting, the verb is **`PUT`**, not `PATCH` (`PATCH` returns a bare `404`):
+
+```bash
+gh api --method PUT repos/sh0bas/the-flagger/pulls/<number>/reviews/<review_id> --input -   # {"body": "..."}
+```
+
+### Writing the body
+
+**Everything posts under the repo owner's GitHub account** — `gh` is authenticated as them, so there is no bot identity and no "reviewed by" attribution. Write the body in the voice of the person whose name is on it.
+
+That means the body is a **summary of what the PR does**, not a report on the review. Never narrate your own process:
+
+> ~~"Reviewed the four skill files against the live repo rather than for code bugs. Most claims check out. One real problem: …"~~
+
+Reading that under your own name is jarring — it sounds like the author reviewing their own PR in the third person. Write this instead:
+
+> Adds four project-scoped Claude Code skills under `.claude/skills/`, capturing conventions that were previously only discoverable by reading the whole codebase:
+>
+> - **`api-db-conventions`** — route/schema/model patterns, which files change together for a new endpoint, and the policy that downgrades refuse rather than silently delete data.
+> - **`scoring-anticheat`** — the `_points` formula and the invariants that keep `save-result` server-authoritative.
+>
+> Also loosens `.gitignore`: the blanket `*.md` rule existed to keep personal notes out of the repo, but it hid every doc worth committing — including these skills. Personal notes now live in `local-docs/` instead.
+
+The shape that works:
+
+1. **One opening sentence** — what the PR adds or changes, and where. No preamble.
+2. **A bullet per component** — `**\`name\`**` in bold, em-dash, then what it actually covers. Concrete nouns, not "improvements to X".
+3. **A closing paragraph for anything non-obvious** — and give the *why*, especially when a change looks unrelated or overreaching. "Loosens `.gitignore`" invites a question; "the blanket rule hid every doc worth committing" answers it.
+
+Keep the findings themselves in the inline comments where they're anchored to code. The body carries the change, not the critique — a reader scanning the PR list should learn what this branch is for.
+
 ### Priority labels
 
 Prefix every comment. Keep nits rare — a review of 12 nits and one real bug buries the bug.
@@ -118,21 +149,25 @@ Prefix every comment. Keep nits rare — a review of 12 nits and one real bug bu
 
 ```markdown
 ## What
-<concise summary of the change>
+<opening sentence, then a bullet per component — same shape and voice as
+"Writing the body" above, which applies verbatim here>
 
 ## Why
-<the motivating reason or issue>
+<the motivating reason or issue — skip this heading if the What already
+carries it; don't pad it with a restatement>
 
 ## Testing
 - Backend: `cd backend && .venv/bin/python -m pytest tests/ -q` — <N passed / failed>
 - Frontend: `npx tsc --noEmit`, `npm run lint`, `npm run build` — <result>
 ```
 
+Same voice rules as the review body: it publishes under the owner's account, so describe the change, never the process that produced it. If you already wrote a review body for this PR, reuse it here rather than composing a second, differently-worded summary.
+
 **Run the commands before writing the results.** Never state a pass/fail you didn't observe.
 
 **There is no frontend test suite.** `frontend/package.json` has no `test` script — no vitest, no jest, no RTL. Do not write "frontend tests pass". The honest frontend line is type-check + lint + build, and for UI changes, say explicitly whether you actually ran the app and looked at it. If a change is visual and unverified in a browser, say that.
 
-Backend suite is currently 28 tests, ~0.5s, with one expected `PydanticDeprecatedSince20` warning that is not a failure.
+The backend suite runs in well under a second and emits one expected `PydanticDeprecatedSince20` warning that is not a failure. Report the counts pytest actually printed rather than a number carried over from a previous run.
 
 Post it:
 

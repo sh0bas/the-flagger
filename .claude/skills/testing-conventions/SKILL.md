@@ -11,9 +11,9 @@ description: How Flagger's test suite is structured and run (pytest, backend-onl
 cd backend && .venv/bin/python -m pytest tests/ -q
 ```
 
-Or in the container: `docker-compose exec backend pytest tests/`
+Or in the container: `docker-compose exec backend pytest tests/` — note this runs the pinned `pytest==7.4.3` from `requirements.txt`, while the venv above has drifted to 9.x. Same tests, different runner.
 
-28 tests, ~0.5s. There is no `pytest.ini`/`pyproject.toml` — pytest runs on defaults, and `tests/conftest.py` does the one piece of setup that matters:
+The suite is fast (well under a second) because it touches no database. There is no `pytest.ini`/`pyproject.toml` — pytest runs on defaults, and `tests/conftest.py` does the one piece of setup that matters:
 
 ```python
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
