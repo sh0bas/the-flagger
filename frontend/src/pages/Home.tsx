@@ -40,9 +40,9 @@ export default function Home() {
             buttonLabel: 'Start Playing',
             buttonVariant: 'contained',
             route: '/play',
-            iconColor: '#6366f1',
-            gradientFrom: 'rgba(99,102,241,0.12)',
-            gradientTo: 'rgba(139,92,246,0.12)',
+            iconColor: '#42C281',
+            gradientFrom: 'rgba(66,194,129,0.12)',
+            gradientTo: 'rgba(47,160,106,0.10)',
         },
         {
             icon: <HistoryIcon sx={{ fontSize: 36 }} />,
@@ -51,9 +51,9 @@ export default function Home() {
             buttonLabel: 'View History',
             buttonVariant: 'outlined',
             route: '/history',
-            iconColor: '#06b6d4',
-            gradientFrom: 'rgba(6,182,212,0.12)',
-            gradientTo: 'rgba(14,165,233,0.10)',
+            iconColor: '#6b7280',
+            gradientFrom: 'rgba(107,114,128,0.12)',
+            gradientTo: 'rgba(75,85,99,0.10)',
         },
     ]
 
@@ -63,8 +63,8 @@ export default function Home() {
                 minHeight: { xs: 'calc(100vh - 56px)', sm: 'calc(100vh - 64px)' },
                 background: (theme) =>
                     theme.palette.mode === 'dark'
-                        ? 'radial-gradient(ellipse at 50% -10%, rgba(99,102,241,0.18), transparent 60%)'
-                        : 'radial-gradient(ellipse at 50% -10%, rgba(99,102,241,0.10), transparent 60%)',
+                        ? 'radial-gradient(ellipse at 50% -10%, rgba(66,194,129,0.18), transparent 60%)'
+                        : 'radial-gradient(ellipse at 50% -10%, rgba(66,194,129,0.10), transparent 60%)',
             }}
         >
             <Container maxWidth="lg">

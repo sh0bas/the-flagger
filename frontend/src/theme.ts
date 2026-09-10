@@ -8,19 +8,19 @@ export function buildTheme(mode: PaletteMode) {
         palette: {
             mode,
             primary: {
-                main: isDark ? '#818cf8' : '#6366f1',
-                light: isDark ? '#a5b4fc' : '#818cf8',
-                dark: isDark ? '#6366f1' : '#4f46e5',
+                main: isDark ? '#2A2F37' : '#20242B',
+                light: isDark ? '#3F4550' : '#343940',
+                dark: isDark ? '#1B1F24' : '#121417',
             },
             secondary: {
-                main: isDark ? '#f472b6' : '#ec4899',
-                light: isDark ? '#f9a8d4' : '#f472b6',
-                dark: isDark ? '#ec4899' : '#db2777',
+                main: '#42C281',
+                light: '#6ED6A1',
+                dark: '#2FA06A',
             },
             success: {
-                main: '#10b981',
-                light: '#34d399',
-                dark: '#059669',
+                main: '#42C281',
+                light: '#6ED6A1',
+                dark: '#2FA06A',
             },
             error: {
                 main: '#ef4444',
@@ -111,9 +111,7 @@ export function buildTheme(mode: PaletteMode) {
                         },
                     },
                     contained: {
-                        boxShadow: '0 2px 8px rgba(99, 102, 241, 0.25)',
                         '&:hover': {
-                            boxShadow: '0 4px 16px rgba(99, 102, 241, 0.35)',
                             transform: 'translateY(-1px)',
                         },
                     },
@@ -195,19 +193,19 @@ export function buildTheme(mode: PaletteMode) {
     })
 }
 
-// Brand gradients. These literals were copy-pasted across eight files; the
-// violet stops appear nowhere else, not even in the palette.
+// Brand colors. These literals were copy-pasted across eight files; kept
+// here as the single source of truth.
 export const BRAND = {
-    indigo: '#6366f1',
-    indigoDark: '#4f46e5',
-    violet: '#8b5cf6',
-    violetDark: '#7c3aed',
-    pink: '#ec4899',
+    charcoal: '#20242B',
+    charcoalDark: '#121417',
+    green: '#42C281',
+    greenLight: '#6ED6A1',
+    greenDark: '#2FA06A',
 } as const
 
 /** Gradient-filled heading text. */
 export const gradientTextSx = {
-    background: `linear-gradient(135deg, ${BRAND.indigo}, ${BRAND.pink})`,
+    background: `linear-gradient(135deg, ${BRAND.green}, ${BRAND.greenLight})`,
     WebkitBackgroundClip: 'text',
     WebkitTextFillColor: 'transparent',
     backgroundClip: 'text',
@@ -215,8 +213,10 @@ export const gradientTextSx = {
 
 /** Primary call-to-action button. */
 export const gradientButtonSx = {
-    background: `linear-gradient(135deg, ${BRAND.indigo}, ${BRAND.violet})`,
+    background: `linear-gradient(135deg, ${BRAND.green}, ${BRAND.greenDark})`,
+    boxShadow: '0 2px 8px rgba(66, 194, 129, 0.25)',
     '&:hover': {
-        background: `linear-gradient(135deg, ${BRAND.indigoDark}, ${BRAND.violetDark})`,
+        background: `linear-gradient(135deg, ${BRAND.greenDark}, ${BRAND.green})`,
+        boxShadow: '0 4px 16px rgba(66, 194, 129, 0.35)',
     },
 } as const

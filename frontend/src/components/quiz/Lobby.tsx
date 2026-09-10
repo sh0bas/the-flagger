@@ -49,7 +49,7 @@ const MODES: { value: FlagQuizMode; label: string; description: string; icon: Re
         label: 'Practice',
         description: 'Learn at your own pace. Incorrect flags carry forward until you nail them all.',
         icon: <SchoolIcon fontSize="large" />,
-        color: '#6366f1',
+        color: '#42C281',
     },
     {
         value: 'endless',
@@ -63,7 +63,7 @@ const MODES: { value: FlagQuizMode; label: string; description: string; icon: Re
         label: 'Gauntlet',
         description: 'Name every flag in the pool — in random order — without a single mistake.',
         icon: <EmojiEventsIcon fontSize="large" />,
-        color: '#ec4899',
+        color: '#e11d48',
     },
 ]
 

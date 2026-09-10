@@ -39,12 +39,12 @@ export default function FeedbackOverlay({ answer, onDone }: Props) {
                     textAlign: 'center',
                     // Gradient background instead of flat colour
                     background: isCorrect
-                        ? 'linear-gradient(135deg, rgba(5,150,105,0.95) 0%, rgba(16,185,129,0.88) 100%)'
+                        ? 'linear-gradient(135deg, rgba(47,160,106,0.95) 0%, rgba(66,194,129,0.88) 100%)'
                         : 'linear-gradient(135deg, rgba(185,28,28,0.95) 0%, rgba(239,68,68,0.88) 100%)',
                     backdropFilter: 'blur(8px)',
                     // Coloured glow ring around the whole overlay
                     boxShadow: isCorrect
-                        ? 'inset 0 0 60px rgba(16,185,129,0.3), 0 0 40px rgba(16,185,129,0.4)'
+                        ? 'inset 0 0 60px rgba(66,194,129,0.3), 0 0 40px rgba(66,194,129,0.4)'
                         : 'inset 0 0 60px rgba(239,68,68,0.3), 0 0 40px rgba(239,68,68,0.4)',
                 }}
             >
@@ -62,7 +62,7 @@ export default function FeedbackOverlay({ answer, onDone }: Props) {
                             height: 96,
                             borderRadius: '50%',
                             background: isCorrect
-                                ? 'radial-gradient(circle, rgba(52,211,153,0.5) 0%, transparent 70%)'
+                                ? 'radial-gradient(circle, rgba(110,214,161,0.5) 0%, transparent 70%)'
                                 : 'radial-gradient(circle, rgba(248,113,113,0.5) 0%, transparent 70%)',
                         },
                     }}
@@ -72,7 +72,7 @@ export default function FeedbackOverlay({ answer, onDone }: Props) {
                             sx={{
                                 fontSize: 72,
                                 color: '#fff',
-                                filter: 'drop-shadow(0 0 12px rgba(52,211,153,0.8))',
+                                filter: 'drop-shadow(0 0 12px rgba(110,214,161,0.8))',
                             }}
                         />
                     ) : (
@@ -92,7 +92,7 @@ export default function FeedbackOverlay({ answer, onDone }: Props) {
                     sx={{
                         color: '#fff',
                         textShadow: isCorrect
-                            ? '0 0 20px rgba(52,211,153,0.6)'
+                            ? '0 0 20px rgba(110,214,161,0.6)'
                             : '0 0 20px rgba(248,113,113,0.6)',
                         letterSpacing: '-0.01em',
                     }}
